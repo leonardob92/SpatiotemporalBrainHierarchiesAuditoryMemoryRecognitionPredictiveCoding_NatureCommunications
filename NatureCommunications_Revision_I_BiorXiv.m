@@ -1993,6 +1993,102 @@ end
 
 %%
 
+%% METHOD FIGURE - DEPICTION OF 8-MM PARCELLATION
+
+load('/projects/MINDLAB2017_MEG-LearningBach/scripts/Leonardo_FunctionsPhD/External/MNI152_8mm_coord_dyi.mat')
+name_model = 'Parc_8mm';
+
+%preparing color specifications
+vcol = rand(size(MNI8,1),size(MNI8,2));
+%loading a brain template
+openfig('/projects/MINDLAB2017_MEG-LearningBach/scripts/Leonardo_FunctionsPhD/External/BrainTemplate_GT.fig')
+hold on
+cnt = 0;
+for aa = 1:90 %over AAL ROIs
+    %getting LBPD coordinates for AAL ROIs aa
+    S = [];
+    S.input = 2; %1 = MNI coordinates; 2 = AAL ROIs; 3 = general image with non-zero values
+    S.coordd = []; %coordinates in MNI space (x,y,z)
+    S.AAL_ROIs = [aa]; %AAL ROIs numbers you want to use
+    % S.image = '/scratch7/MINDLAB2020_MEG-AuditoryPatternRecognition/leonardo/after_maxfilter_v2/Source_LBPD/Block_3/Beam_abs_0_sens_1_freq_broadband/Contr_1_abs_0.nii.gz';
+    S.image = '/scratch7/MINDLAB2017_MEG-LearningBach/DTI_Portis/Templates/parcel_80mm_3559ROIs/3000.nii.gz';
+    %actual function
+    idx_LBPD = From3DNifti_OrMNICoords_2_CoordMatrix_8mm_LBPD_D(S);
+    for ii = 1:size(idx_LBPD,1) %over brain voxels
+        cnt = cnt + 1;
+        plot3(MNI8(idx_LBPD(ii), 1), MNI8(idx_LBPD(ii), 2), MNI8(idx_LBPD(ii), 3), ['.'], 'Color', vcol(cnt,:), 'MarkerSize', 10); %centroid of ROI ii
+        hold on
+    end
+end
+rotate3d on; axis off; axis vis3d; axis equal
+
+% view([0 90])
+% export_fig([name_model '_top.eps'])
+% export_fig([name_model '_top.png'])
+% view([-90 0])
+% export_fig([name_model '_left.eps'])
+% export_fig([name_model '_left.png'])
+view([90 0])
+export_fig([name_model '_right.eps'])
+export_fig([name_model '_right.png'])
+% view([0 -90])
+% export_fig([name_model '_top2.eps'])
+% export_fig([name_model '_top2.png'])
+% view([0 0])
+% export_fig([name_model '_back.eps'])
+% export_fig([name_model '_back.png'])
+% view([-180 0])
+% export_fig([name_model '_front.eps'])
+% export_fig([name_model '_front.png'])
+
+%% METHOD FIGURE - DEPICTION OF AAL PARCELLATION
+
+load('/projects/MINDLAB2017_MEG-LearningBach/scripts/Leonardo_FunctionsPhD/External/MNI152_8mm_coord_dyi.mat')
+name_model = 'Parc_AAL';
+
+%preparing color specifications
+vcol = rand(90,3);
+%loading a brain template
+openfig('/projects/MINDLAB2017_MEG-LearningBach/scripts/Leonardo_FunctionsPhD/External/BrainTemplate_GT.fig')
+hold on
+for aa = 1:90 %over AAL ROIs
+    %getting LBPD coordinates for AAL ROIs aa
+    S = [];
+    S.input = 2; %1 = MNI coordinates; 2 = AAL ROIs; 3 = general image with non-zero values
+    S.coordd = []; %coordinates in MNI space (x,y,z)
+    S.AAL_ROIs = [aa]; %AAL ROIs numbers you want to use
+    % S.image = '/scratch7/MINDLAB2020_MEG-AuditoryPatternRecognition/leonardo/after_maxfilter_v2/Source_LBPD/Block_3/Beam_abs_0_sens_1_freq_broadband/Contr_1_abs_0.nii.gz';
+    S.image = '/scratch7/MINDLAB2017_MEG-LearningBach/DTI_Portis/Templates/parcel_80mm_3559ROIs/3000.nii.gz';
+    %actual function
+    idx_LBPD = From3DNifti_OrMNICoords_2_CoordMatrix_8mm_LBPD_D(S);
+    for ii = 1:size(idx_LBPD,1) %over brain voxels
+        plot3(MNI8(idx_LBPD(ii), 1), MNI8(idx_LBPD(ii), 2), MNI8(idx_LBPD(ii), 3), ['.'], 'Color', vcol(aa,:), 'MarkerSize', 10); %centroid of ROI ii
+        hold on
+    end
+end
+rotate3d on; axis off; axis vis3d; axis equal
+
+% view([0 90])
+% export_fig([name_model '_top.eps'])
+% export_fig([name_model '_top.png'])
+% view([-90 0])
+% export_fig([name_model '_left.eps'])
+% export_fig([name_model '_left.png'])
+view([90 0])
+export_fig([name_model '3_right.eps'])
+export_fig([name_model '3_right.png'])
+% view([0 -90])
+% export_fig([name_model '_top2.eps'])
+% export_fig([name_model '_top2.png'])
+% view([0 0])
+% export_fig([name_model '_back.eps'])
+% export_fig([name_model '_back.png'])
+% view([-180 0])
+% export_fig([name_model '_front.eps'])
+% export_fig([name_model '_front.png'])
+
+%%
+
 %% *** TIME-FREQUENCY ANALYSIS ***
 
 %% setting up the cluster
