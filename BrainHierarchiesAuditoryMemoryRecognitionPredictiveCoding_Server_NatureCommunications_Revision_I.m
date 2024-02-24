@@ -558,7 +558,7 @@ for pp = jkl%length(peaks) + 1
         S.save_name_data = ['Block_' num2str(block)];
         %individual waveform plotting
         if isempty(channels_plot)
-            S.waveform_singlechannels_label = 1; %1 to plot single channel waveforms
+            S.waveform_singlechannels_label = 0; %1 to plot single channel waveforms
         else
             S.waveform_singlechannels_label = 0; %1 to plot single channel waveforms
         end
@@ -2208,15 +2208,15 @@ jobid = job2cluster(@InducedResponses_Morlet_Coords_AALROIs_LBPD_D,S);
 
 %% INDUCED RESPONSES - MEG SENSORS
 
-condition = 2; % 1 = Old; 2 = NewT1; 3 = NewT2; 4 = NewT3; 5 = NewT4
+condition = 1; % 1 = Old; 2 = NewT1; 3 = NewT2; 4 = NewT3; 5 = NewT4
 fff = 1:60; %frequencies to be plotted
 exportl = 1; % 1 = export figures
-ttestl = 0; %1 = t-tests Old vs NewT1; 0 = single condition
+ttestl = 1; %1 = t-tests Old vs NewT1; 0 = single condition
 basel = 1; % 1 = baseline correction (subtraction); 0 = no baseline correction
 
 CHAN{1} = 'MEG211'; CHAN{2} = 'MEG1311'; CHAN{3} = 'MEG241'; CHAN{4} = 'MEG1331'; CHAN{5} = 'MEG1631'; CHAN{6} = 'MEG2441'; CHAN{7} = 'MEG1921'; CHAN{8} = 'MEG2341'; %channels name
 if ttestl ~= 1
-    loading data
+%     loading data
 %                 if ~exist('P2','var')
         if basel == 1
             load('/scratch7/MINDLAB2020_MEG-AuditoryPatternRecognition/leonardo/Papers/Systematic_Variations_DCM/NatureCommunications_Revision/Revision_I/Time_Frequency_Analysis/TF_ERFs/BaselineCorr_Time_Frequency_AllSubjects_AveragedTrials_MEGsensors.mat');
@@ -2249,10 +2249,12 @@ if ttestl ~= 1
     end
 else
     %loading data
-%     if ~exist('P2','var')
+    if basel == 1
+        load('/scratch7/MINDLAB2020_MEG-AuditoryPatternRecognition/leonardo/Papers/Systematic_Variations_DCM/NatureCommunications_Revision/Revision_I/Time_Frequency_Analysis/TF_ERFs/BaselineCorr_Time_Frequency_AllSubjects_AveragedTrials_MEGsensors.mat');
+    else
         load('/scratch7/MINDLAB2020_MEG-AuditoryPatternRecognition/leonardo/Papers/Systematic_Variations_DCM/NatureCommunications_Revision/Revision_I/Time_Frequency_Analysis/TF_ERFs/Time_Frequency_AllSubjects_AveragedTrials_MEGsensors.mat');
-%     end
-        Tall = zeros(size(P2,2),size(P2,3),8);
+    end
+    Tallthresh = zeros(size(P2,2),size(P2,3),8);
     %computing t-tests
     for cc = 1:8 %over MEG channels
         P = zeros(size(P2,2),size(P2,3));
@@ -2265,7 +2267,6 @@ else
             end
             disp(ii)
         end
-        Tall(:,:,cc) = T;
         %testing contrast results (correcting for multiple comparison) by performing Monte Carlo simulations
         P3 = zeros(size(T,1),size(T,2));
         P3(abs(T)>2) = 1; %threshold
@@ -2276,7 +2277,7 @@ else
         t1 = f(fff); t2 = time;
         [ OUT ] = twoD_MCS_LBPD_D( P3, thresh, permut, threshMC, perm_max, t1 , t2 )
         PDn = cell2table(OUT(:,1:7)); %table (not getting the last column (8) because it contains a large matrix useful for plotting purposes)
-%         writetable(PDn,['/scratch7/MINDLAB2020_MEG-AuditoryPatternRecognition/leonardo/Papers/Systematic_Variations_DCM/NatureCommunications_Revision/Revision_I/Time_Frequency_Analysis/LBPD_Parcels/FinalImages/MEGsensors_Induced/TF' CHAN{cc} '_cond1_vs_cond2.xlsx'],'Sheet',1); %printing excel file
+        writetable(PDn,['/aux/MINDLAB2021_MEG-TempSeqAges/24_02_2024/MEGSensors/TF' CHAN{cc} '_cond1_vs_cond2.xlsx'],'Sheet',1); %printing excel file
         %plotting
         figure
         T2 = T;
@@ -2292,14 +2293,18 @@ else
         x = []; x.bottom = [0 0 0.5]; x.botmiddle = [0 0.5 1]; x.middle = [1 1 1]; x.topmiddle = [1 0 0]; x.top = [0.6 0 0]; %red - blue
         colormap(bluewhitered_PD(0,x))
         title([CHAN{cc} ' - Cond 1 vs Cond 2'])
-%         export_fig(['/scratch7/MINDLAB2020_MEG-AuditoryPatternRecognition/leonardo/Papers/Systematic_Variations_DCM/NatureCommunications_Revision/Revision_I/Time_Frequency_Analysis/LBPD_Parcels/FinalImages/MEGsensors_Induced/' CHAN{cc} '_Cond1_vs_Cond2.png'])
-%         export_fig(['/scratch7/MINDLAB2020_MEG-AuditoryPatternRecognition/leonardo/Papers/Systematic_Variations_DCM/NatureCommunications_Revision/Revision_I/Time_Frequency_Analysis/LBPD_Parcels/FinalImages/MEGsensors_Induced/' CHAN{cc} '_Cond1_vs_Cond2.eps'])
+        export_fig(['/aux/MINDLAB2021_MEG-TempSeqAges/24_02_2024/MEGSensors/' CHAN{cc} '_Cond1_vs_Cond2.png'])
+        export_fig(['/aux/MINDLAB2021_MEG-TempSeqAges/24_02_2024/MEGSensors/' CHAN{cc} '_Cond1_vs_Cond2.eps'])
+        Tallthresh(:,:,cc) = T2;
     end
 end
 
+% save(['/aux/MINDLAB2021_MEG-TempSeqAges/24_02_2024/MEGSensors/' CHAN{cc} '_Cond1_vs_Cond2.mat'],'T');
+% load('/scratch7/MINDLAB2020_MEG-AuditoryPatternRecognition/leonardo/Papers/Systematic_Variations_DCM/NatureCommunications_Revision/Revision_I/Time_Frequency_Analysis/TF_ERFs/BaselineCorr_Time_Frequency_AllSubjects_AveragedTrials_MEGsensors.mat');
+
 %% plotting SELECTED AAL ROIs PLUS OCCIPITAL SUPERIOR L or R (ALSO FROM AAL)
 
-condition = 2; % 1 = Old; 2 = NewT1; 3 = NewT2; 4 = NewT3; 5 = NewT4; 0 = Old vs NewTcc (all categories of New)
+condition = 0; % 1 = Old; 2 = NewT1; 3 = NewT2; 4 = NewT3; 5 = NewT4; 0 = Old vs NewTcc (all categories of New)
 fff = 1:60; %frequencies to be plotted
 listn = 8; %index of the analysis to be run (with reference to the variable "list")
 loadl = 1; %1 for loading; 0 for not loading, in case you already loaded the data and want to plot different conditions
@@ -2358,6 +2363,8 @@ if condition ~= 0
        writetable(PDn,['/aux/MINDLAB2021_MEG-TempSeqAges/09_11_2023/SourceData/Figure_7_Gemma/TF_' list(listn).name(24:end) '_Cond' num2str(condition) '.xlsx'],'Sheet',1); %printing excel file
     end
 else
+    Tall = zeros(size(Pold,1),size(Pold,2),4);
+    Tallthresh = zeros(size(Pold,1),size(Pold,2),4);
     for cc = 1:4 %over contrasts (i.e. 'old' versus 'newtcc')
 %         Pold = squeeze(mean(P2,1)); %mean over voxels
         %t-tests
@@ -2383,7 +2390,7 @@ else
         t1 = f(fff); t2 = time;
         [ OUT ] = twoD_MCS_LBPD_D( P3, thresh, permut, threshMC, perm_max, t1 , t2 )
         PDn = cell2table(OUT(:,1:7)); %table (not getting the last column (8) because it contains a large matrix useful for plotting purposes)
-        writetable(PDn,['/aux/MINDLAB2021_MEG-TempSeqAges/20_10_2023/TF_' list(listn).name(24:end) '_cond1_vs_cond' num2str(cc+1) '.xlsx'],'Sheet',1); %printing excel file
+        writetable(PDn,['/aux/MINDLAB2021_MEG-TempSeqAges/24_02_2024/AAL/TF_' list(listn).name(24:end) '_cond1_vs_cond' num2str(cc+1) '.xlsx'],'Sheet',1); %printing excel file
         %plotting
         figure
         T2 = T;
@@ -2398,16 +2405,17 @@ else
         %colormap with white for 0 values
         x = []; x.bottom = [0 0 0.5]; x.botmiddle = [0 0.5 1]; x.middle = [1 1 1]; x.topmiddle = [1 0 0]; x.top = [0.6 0 0]; %red - blue
         colormap(bluewhitered_PD(0,x))
+        Tallthresh(:,:,cc) = T2;
         title([list(listn).name(end-10:end) ' - Cond 1 vs Cond ' num2str(cc+1)])
         if exportl == 1
-            export_fig(['/aux/MINDLAB2021_MEG-TempSeqAges/20_10_2023/Thresh_TF_' list(listn).name(24:end) '_cond1_vs_cond' num2str(cc+1) '.png'])
-            export_fig(['/aux/MINDLAB2021_MEG-TempSeqAges/20_10_2023/Thresh_TF_' list(listn).name(24:end) '_cond1_vs_cond' num2str(cc+1) '.eps'])
+            export_fig(['/aux/MINDLAB2021_MEG-TempSeqAges/24_02_2024/AAL/Thresh_TF_' list(listn).name(24:end) '_cond1_vs_cond' num2str(cc+1) '.png'])
+            export_fig(['/aux/MINDLAB2021_MEG-TempSeqAges/24_02_2024/AAL/Thresh_TF_' list(listn).name(24:end) '_cond1_vs_cond' num2str(cc+1) '.eps'])
         end
         %export data for NC data source
         if cc == 1 %only M vs NT1
             bumbum = squeeze(T2(fff,:));
             PDn = table(bumbum); %table (not getting the last column (8) because it contains a large matrix useful for plotting purposes)
-            writetable(PDn,['/aux/MINDLAB2021_MEG-TempSeqAges/09_11_2023/TF_' list(listn).name(24:end) '_cond1_vs_cond' num2str(cc+1) '.xlsx'],'Sheet',1); %printing excel file
+            writetable(PDn,['/aux/MINDLAB2021_MEG-TempSeqAges/24_02_2024/AAL/TF_SourceData_' list(listn).name(24:end) '_cond1_vs_cond' num2str(cc+1) '.xlsx'],'Sheet',1); %printing excel file
         end
         %plotting
         figure
@@ -2422,11 +2430,29 @@ else
         x = []; x.bottom = [0 0 0.5]; x.botmiddle = [0 0.5 1]; x.middle = [1 1 1]; x.topmiddle = [1 0 0]; x.top = [0.6 0 0]; %red - blue
         colormap(bluewhitered_PD(0,x))
         title([list(listn).name(end-10:end) ' - Cond 1 vs Cond ' num2str(cc+1)])
+        Tall(:,:,cc) = T2;
         if exportl == 1
-            export_fig(['/aux/MINDLAB2021_MEG-TempSeqAges/20_10_2023/TF_' list(listn).name(24:end) '_cond1_vs_cond' num2str(cc+1) '.png'])
-            export_fig(['/aux/MINDLAB2021_MEG-TempSeqAges/20_10_2023/TF_' list(listn).name(24:end) '_cond1_vs_cond' num2str(cc+1) '.eps'])
+            export_fig(['/aux/MINDLAB2021_MEG-TempSeqAges/24_02_2024/AAL/TF_' list(listn).name(24:end) '_cond1_vs_cond' num2str(cc+1) '.png'])
+            export_fig(['/aux/MINDLAB2021_MEG-TempSeqAges/24_02_2024/AAL/TF_' list(listn).name(24:end) '_cond1_vs_cond' num2str(cc+1) '.eps'])
+        end
+        if listn > 6
+            save(['/aux/MINDLAB2021_MEG-TempSeqAges/24_02_2024/AAL/' list(listn).name '.mat'],'Tallthresh','Tall','Pold')
+        else
+            save(['/aux/MINDLAB2021_MEG-TempSeqAges/24_02_2024/AAL/' list(listn).name '.mat'],'Tallthresh','Tall')
         end
     end
+end
+
+%% creating source data for Figure S12
+
+list = dir(['/scratch7/MINDLAB2020_MEG-AuditoryPatternRecognition/leonardo/Papers/Systematic_Variations_DCM/NatureCommunications_Revision/Revision_I/Time_Frequency_Analysis/LBPD_Parcels/FinalImages/BaselCorr/Time_*']);
+TALL = zeros(60,1026,4,length(list));
+TALLTHRESH = zeros(60,1026,4,length(list));
+for ii = 1:length(list) %over ROIs
+    load(['/aux/MINDLAB2021_MEG-TempSeqAges/24_02_2024/AAL/' list(ii).name])
+    TALL(:,:,:,ii) = Tall;
+    TALLTHRESH(:,:,:,ii) = Tallthresh;
+    disp(ii)
 end
 
 %%
@@ -2828,7 +2854,7 @@ end
 %% STATISTICS AND PLOTTING - TF - ORIGINAL PARCELLATION
 %LOADING INDEPENDENT SUBJECTS (COMPUTED INDEPENDENT VOXELS AND THEN AVERAGED IN THE ROIs)
 
-condition = 1; % 1 = Old; 2 = NewT1; 3 = NewT2; 4 = NewT3; 5 = NewT5; 0 = Old - NewT1
+condition = 0; % 1 = Old; 2 = NewT1; 3 = NewT2; 4 = NewT3; 5 = NewT5; 0 = Old - NewT1
 contr = [1 2 3 4 5]; %conditions to be contrasted (NOW IT'S FROM 1 TO 5 BECAUSE I CREATED A LOOP FOR DOING ALL CONTRASTS), meaningul only if condition == 0
 fff = 1:60; %frequencies to be plotted
 ROIn = [1:6]; % 1 = MC; 2 = HITL; 3 = HITR; 4 = VMPFC; 5 = ACL; 6 = ACR with Morlet computed independently on each voxel and each trial and then the output was averaged (twice)
@@ -2837,7 +2863,7 @@ basel = 1; % 1 = baseline correction (subtraction); 0 = no baseline correction
 exportl = 1; %1 for exporting figures
 
 if basel == 1
-    outdir = '/aux/MINDLAB2021_MEG-TempSeqAges/09_11_2023/SourceData/Figure_S17_Gemma';
+    outdir = '/aux/MINDLAB2021_MEG-TempSeqAges/24_02_2024/FunctionalROI';
     indir = '/scratch7/MINDLAB2020_MEG-AuditoryPatternRecognition/leonardo/Papers/Systematic_Variations_DCM/NatureCommunications_Revision/Revision_I/Time_Frequency_Analysis/LBPD_Parcels/BaselCorr';
 else
     outdir = '/scratch7/MINDLAB2020_MEG-AuditoryPatternRecognition/leonardo/Papers/Systematic_Variations_DCM/NatureCommunications_Revision/Revision_I/Time_Frequency_Analysis/LBPD_Parcels/FinalImages';
@@ -2889,7 +2915,8 @@ for ss = 1:length(ROIn)
         end
     end
     if condition == 0
-%         Tall = zeros(60,1026,4,6); %this was temporary just to save source data for Nature Communications
+        Tall = zeros(60,1026,4,6); %this was temporary just to save source data files for Nature Communications
+        Tallthresh = zeros(60,1026,4,6); %this was temporary just to save source data files for Nature Communications
         for cc = 1:4 %over contrasts (old versus NewTX)
             Pold = P2;
             %     Pold = Pold - mean(Pold(:,1:26,:,:),2); %baseline correction
@@ -2905,7 +2932,7 @@ for ss = 1:length(ROIn)
                 end
                 disp(ii)
             end
-%             Tall(:,:,cc,ss) = T; %this was temporary just to save source data for Nature Communications
+            Tall(:,:,cc,ss) = T; %this was temporary just to save source data for Nature Communications
 %         end
             %testing contrast results (correcting for multiple comparison) by performing Monte Carlo simulations
             P3 = zeros(size(T,1),size(T,2));
@@ -2916,8 +2943,9 @@ for ss = 1:length(ROIn)
             perm_max = 1;
             t1 = f(fff); t2 = time;
             [ OUT ] = twoD_MCS_LBPD_D( P3, thresh, permut, threshMC, perm_max, t1 , t2 )
-            %             PDn = cell2table(OUT); %table
-            %             writetable(PDn,[outdir '/TF_cond' num2str(contr(1)) '_vs_cond' num2str(contr(cc+1)) '_' ROII{ROIn(ss)} '.xlsx'],'Sheet',1); %printing excel file
+            PDn = cell2table(OUT(:,1:7)); %table
+            writetable(PDn,[outdir '/TF_cond' num2str(contr(1)) '_vs_cond' num2str(contr(cc+1)) '_' ROII{ROIn(ss)} '.xlsx'],'Sheet',1); %printing excel file
+            %plotting
             figure
             T2 = T;
             T2(OUT{1,8}==0) = 0;
@@ -2932,9 +2960,30 @@ for ss = 1:length(ROIn)
             x = []; x.bottom = [0 0 0.5]; x.botmiddle = [0 0.5 1]; x.middle = [1 1 1]; x.topmiddle = [1 0 0]; x.top = [0.6 0 0]; %red - blue
             colormap(bluewhitered_PD(0,x))
             title([ROII{ROIn(ss)} ' - Cond' num2str(contr(1)) ' vs cond' num2str(contr(cc+1))])
+            Tallthresh(:,:,cc,ss) = T;
             if exportl == 1
-                export_fig([outdir '/ROIs_Induced/TF_SignOnly_cond' num2str(contr(1)) '_vs_cond' num2str(contr(cc+1)) '_' ROII{ROIn(ss)} '.eps'])
-                export_fig([outdir '/ROIs_Induced/TF_SignOnly_cond' num2str(contr(1)) '_vs_cond' num2str(contr(cc+1)) '_' ROII{ROIn(ss)} '.png'])
+                export_fig([outdir '/TF_cond' num2str(contr(1)) '_vs_cond' num2str(contr(cc+1)) '_' ROII{ROIn(ss)} '.eps'])
+                export_fig([outdir '/TF_cond' num2str(contr(1)) '_vs_cond' num2str(contr(cc+1)) '_' ROII{ROIn(ss)} '.png'])
+            end
+            %thresholded
+            figure
+            T2 = T;
+            T2(OUT{1,8}==0) = 0;
+            T2(:,1:24) = 0;
+            imagesc(time,f(fff),squeeze(T2(fff,:)))
+            set(gca,'YDir','normal') %plotting frequencies in descending order
+            xlabel('time (s)'); ylabel('f (Hz)');
+            colorbar
+            caxis([-6 6])
+            set(gcf,'color','w')
+            %colormap with white for 0 values
+            x = []; x.bottom = [0 0 0.5]; x.botmiddle = [0 0.5 1]; x.middle = [1 1 1]; x.topmiddle = [1 0 0]; x.top = [0.6 0 0]; %red - blue
+            colormap(bluewhitered_PD(0,x))
+            title([ROII{ROIn(ss)} ' - Cond' num2str(contr(1)) ' vs cond' num2str(contr(cc+1))])
+            Tallthresh(:,:,cc,ss) = T;
+            if exportl == 1
+                export_fig([outdir '/TF_SignOnly_cond' num2str(contr(1)) '_vs_cond' num2str(contr(cc+1)) '_' ROII{ROIn(ss)} '.eps'])
+                export_fig([outdir '/TF_SignOnly_cond' num2str(contr(1)) '_vs_cond' num2str(contr(cc+1)) '_' ROII{ROIn(ss)} '.png'])
             end
         end            
     end
@@ -3169,3 +3218,22 @@ end
 % xlswrite([outdir '/PairwiseDecoding.xlsx'],dumbo2)
 
 %%
+
+
+list1 = dir('/scratch7/MINDLAB2020_MEG-AuditoryPatternRecognition/leonardo/after_maxfilter_v2/esp*recogminor*.mat');
+list2 = dir('/scratch7/MINDLAB2020_MEG-AuditoryPatternRecognition/leonardo/after_maxfilter_v2/esp*recogminor*.dat');
+
+
+
+for ii = 1:length(list1)
+    copyfile([list1(ii).folder '/' list1(ii).name],['/aux/MINDLAB2021_MEG-TempSeqAges/barb2/' list1(ii).name(9:16) '.mat'])
+    copyfile([list2(ii).folder '/' list2(ii).name],['/aux/MINDLAB2021_MEG-TempSeqAges/barb2/' list2(ii).name(9:16) '.dat'])
+    disp(ii)
+end
+
+%%
+
+load('/projects/MINDLAB2017_MEG-LearningBach/scripts/Leonardo_FunctionsPhD/External/MNI152_8mm_coord_dyi.mat');
+PDn = table(MNI8); %table
+writetable(PDn,['/aux/MINDLAB2021_MEG-TempSeqAges/24_02_2024/MNI_LBPD.xlsx'],'Sheet',1); %printing excel file
+
