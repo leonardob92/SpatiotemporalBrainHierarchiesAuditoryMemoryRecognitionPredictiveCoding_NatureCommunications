@@ -1,6 +1,6 @@
 Spatiotemporal brain hierarchies of auditory memory recognition and predictive coding
 
-Matlab leading script for the paper entitled: "Spatiotemporal brain hierarchies of auditory memory recognition and predictive coding", Nature Communications (2024). L. Bonetti, G. Fernández Rubio, F. Carlomagno, M.J. Dietz, D. Pantazis, P. Vuust, M.L. Kringelbach.
+Matlab leading script for the paper entitled: "Spatiotemporal brain hierarchies of auditory memory recognition and predictive coding", Nature Communications (2024). L. Bonetti, G. Fernández Rubio, F. Carlomagno, M.J. Dietz, D. Pantazis, P. Vuust, M.L. Kringelbach. https://www.nature.com/articles/s41467-024-48302-4
 
 Additional relevant codes and functions are available here: https://github.com/leonardob92/LBPD-1.0.git
 
